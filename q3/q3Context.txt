@@ -1,0 +1,55 @@
+\section*{Q3 Predictive Analytics: From Intake Profiles to Expected Service Demand}
+
+\subsection*{Context}
+The clients analyzed in Q2 are historical clients. Their progress trajectories are now known
+because they have already moved through the pathway. Chen's planning problem, however, is
+forward-looking. She must make decisions about children who are still on the waitlist, before
+any session notes exist.
+
+Your task is to use the historical clients from Q2 to learn how intake characteristics relate
+to different trajectory types. If age, referral reason, complexity, or other intake features are
+associated with different progress patterns, Westfield may be able to predict which type of
+pathway a new referral is most likely to follow.
+
+The goal of this question is to predict the likely trajectory type of each new referral using
+information available at intake. Those predictions feed back into Q2(g) to estimate the capacity
+impact of the differentiated reassessment policy on the current waitlist.
+
+\subsection*{(a) Exploring Intake Features by Trajectory Type}
+Using \texttt{client\_features.csv}, compare intake characteristics across the trajectory clusters you iden-
+tified in Q2. Produce visual summaries of how these features differ across clusters. Then answer:
+\begin{itemize}
+    \item Which features appear most useful for distinguishing trajectory groups?
+    \item Which features overlap substantially across groups?
+\end{itemize}
+
+\subsection*{(b) Train a Model to Predict Trajectory Group}
+Using the historical clients from Q2, train two classifiers to predict trajectory cluster membership
+from intake features alone:
+\begin{enumerate}
+    \item A parametric model, such as multinomial logistic regression
+    \item A more flexible non-parametric model, such as a random forest or gradient-boosted trees
+\end{enumerate}
+
+Use a stratified 80/20 train/test split. For each model, report accuracy and the confusion matrix.
+State which model you would recommend for this setting and why.
+
+\subsection*{(c) Predict Trajectory Mix for the Waitlist}
+Apply your best model to the clients in \texttt{waitlist.csv} to estimate which trajectory group each
+waiting client is most likely to follow.
+
+Using those predicted assignments together with the cluster-level $Q_c^*$ values from Q2, estimate the
+total session capacity Westfield would need to serve the current waitlist under the differentiated
+reassessment policy. Compare this against the baseline assumption that every client receives all
+\[
+T_{\max} = 12
+\]
+sessions. Specifically:
+\begin{itemize}
+    \item For each waiting client, assign the expected sessions delivered under the policy for their predicted
+    cluster (i.e., $\mathbb{E}[\text{delivered} \mid Q_c^*]$)
+    \item Sum across all waiting clients to obtain a total expected session demand
+    \item Report how this compares to the $T_{\max}$ baseline (total sessions if no differentiated policy were
+    applied)
+    \item Identify which trajectory groups drive the most capacity savings and which contribute little
+\end{itemize}
