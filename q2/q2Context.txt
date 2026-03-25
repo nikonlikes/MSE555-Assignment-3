@@ -1,0 +1,109 @@
+\section*{Q2 Trajectories, Optimization \& Selecting K}
+
+\subsection*{Context}
+You now have a per-session progress score for every client in the dataset. Taken together, these
+scores form a progress trajectory for each child across care. Some children show strong gains
+early and then level off. Others improve gradually. Others show uneven or delayed progress.
+
+This question asks you to do three things in sequence: build a clustering model, derive an
+optimal reassessment policy from the clusters it produces, and then use what you learn from
+that policy to decide how many clusters to use.
+
+\subsection*{(a) Build the Clustering Model}
+Build a pipeline that converts per-session scores to a $0$--$3$ scale, constructs cumulative progress
+trajectories across Sessions $1$--$12$, and applies K-means clustering for a value of $K$ that you supply.
+Generate spaghetti plots showing individual trajectories within each cluster and the cluster mean.
+
+\subsection*{(b) Derive the Optimal Reassessment Policy}
+For each cluster, apply the newsvendor-style audit model below to the clusters you have built. This
+is the prescriptive core of the question: given a cluster's distribution of stopping points, when
+should Westfield schedule the reassessment?
+
+\paragraph{Model setup}
+
+\begin{center}
+\begin{tabular}{p{0.18\textwidth} p{0.72\textwidth}}
+\toprule
+\textbf{Parameter} & \textbf{Definition} \\
+\midrule
+$T_{\max}$ & Maximum sessions in the funded pathway $= 12$ \\[0.5em]
+$t_i^*$ & Stopping point for client $i$: earliest session where cumulative progress
+$\ge 90\%$ of that client's total cumulative progress across all sessions \\[0.5em]
+$Q$ & Reassessment session chosen for a given cluster (the decision variable) \\[0.5em]
+$F_c(Q)$ & Empirical CDF of $t^*$ within cluster $c$:
+$F_c(Q) = P(t^* \le Q \mid c)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{One-shot audit rule (mirroring Westfield's re-assessment logic in Exhibit B):}
+\begin{itemize}
+    \item If $Q < t_i^*$: reassessment is too early; the child continues to $T_{\max}$ (no sessions saved)
+    \item If $Q \ge t_i^*$: plateau confirmed; care ends at $Q$ $(T_{\max} - Q$ sessions saved)
+\end{itemize}
+
+\paragraph{Expected sessions saved:}
+\[
+\mathbb{E}[\text{savings}](Q) = F_c(Q)\times (T_{\max} - Q)
+\]
+
+\paragraph{Objective:}
+for each cluster $c$, find
+\[
+Q_c^* = \arg\max_Q \mathbb{E}[\text{savings}](Q)
+\]
+
+For each client, compute $t_i^*$ using the fraction-of-total-progress rule. Then, for each cluster and
+for $Q = 1,2,\ldots,12$, compute $\mathbb{E}[\text{savings}](Q)$ and identify $Q_c^*$.
+Do this for each value of $K$ you are evaluating.
+
+\subsection*{(c) Select K}
+Use the policy outcomes to commit to a final value of $K$. The goal is a clustering that produces
+reassessment policies that are genuinely distinct and actionable.
+
+State your final choice of $K$ and justify it in terms of both what the trajectory shapes look like and
+what the optimization revealed.
+
+\subsection*{(d) Required Plots for Your Final K}
+Using your chosen $K$, produce the following three plots:
+
+\paragraph{Plot 1 --- $t_i^*$ distributions.}
+For each cluster, plot a histogram of $t_i^*$ values (one panel per cluster,
+shared x-axis). The x-axis is the stopping session ($1$--$12$) and the y-axis is the count of clients. These
+distributions show whether stopping points are concentrated or spread out within each group, and
+whether they tend to fall early or late in the pathway.
+
+\paragraph{Plot 2 --- Expected sessions saved vs.\ $Q$.}
+For each cluster, plot $\mathbb{E}[\text{savings}](Q)$ against
+$Q = 1,2,\ldots,12$ on a single set of axes (one line per cluster). Mark $Q_c^*$ for each cluster with a vertical
+dashed line. This curve makes the tradeoff between auditing early and auditing late visible, and
+shows why different clusters call for different reassessment timing.
+
+\paragraph{Plot 3 --- Optimized $Q^*$ vs.\ mean($t^*$) baseline.}
+For each cluster, compute a naive baseline
+policy by rounding the mean $t^*$ within that cluster. Plot expected sessions saved per child side-by-side for the optimized $Q^*$ and the baseline (one grouped bar per cluster). Report the overall
+difference in expected savings across all clients and explain intuitively why the optimized policy can
+outperform the mean heuristic.
+
+\subsection*{(e) Summary Table and Cluster Labels}
+Fill in the table below for your final $K$:
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Cluster} & \textbf{Size of Cluster} & $\mathbf{Q_c^*}$ & \textbf{E[saved/child]} & \textbf{\% of sessions saved} \\
+\midrule
+ &  &  &  &  \\
+ &  &  &  &  \\
+ &  &  &  &  \\
+\midrule
+\textbf{Total} & --- & --- &  &  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{(f) Implications for the Case}
+Chen and Patel suggest that clients may receive similar numbers of sessions but still progress very
+differently through care. To what extent do your clusters support this claim? What do the trajectory
+patterns and the differentiated reassessment policy suggest for how Westfield plans and schedules
+care?
